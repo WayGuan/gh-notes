@@ -1,0 +1,8 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/oauth/callback"
+  to = "/.netlify/functions/oauth"
+  status = 200

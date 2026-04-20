@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --surface: #ffffff;
+      --surface2: #f0ede6;
+      --border: rgba(0,0,0,0.09);
+      --border-strong: rgba(0,0,0,0.18);
+      --text: #1a1814;
+      --text-2: #6b6760;
+      --text-3: #a09d97;
+      --accent: #2d5a3d;
+      --accent-light: #e8f0eb;
+      --accent-text: #1d3d29;
+      --danger: #b83232;
+      --danger-light: #fdf0f0;
+      --amber: #92621a;
+      --amber-light: #fdf4e7;
+      --pin: #7c5a2e;
+      --pin-light: #faf3ea;
+      --radius: 12px;
+      --radius-sm: 7px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    #app { min-height: 100vh; }
+
+    /* ── Auth Screen ── */
+    #auth-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: var(--bg);
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .auth-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-light);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+
+    .auth-icon svg { width: 28px; height: 28px; color: var(--accent); }
+
+    .auth-card h1 {
+      font-family: 'Lora', serif;
+      font-size: 26px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .auth-card p {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    .btn-github {
+      width: 100%;
+      height: 48px;
+      background: #24292f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-github:hover { background: #3a4047; }
+    .btn-github svg { width: 20px; height: 20px; fill: #fff; }
+
+    .auth-note {
+      margin-top: 1.25rem;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .auth-error {
+      margin-top: 1rem;
+      padding: 10px 14px;
+      background: var(--danger-light);
+      color: var(--danger);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      display: none;
+    }
+    .auth-error.show { display: block; }
+
+    /* ── No OAuth Config Screen ── */
+    .setup-steps {
+      text-align: left;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      margin: 1.5rem 0;
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 2;
+    }
+    .setup-steps b { color: var(--text); }
+    .setup-steps code {
+      background: var(--border);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    /* ── Main App ── */
+    #main-screen { display: none; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(247,245,240,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-brand {
+      font-family: 'Lora', serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .search-wrap {
+      flex: 1;
+      position: relative;
+      max-width: 340px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
+      stroke: var(--text-3);
+      fill: none;
+      stroke-width: 2;
+      pointer-events: none;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      height: 34px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0 12px 0 32px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--text-3); }
+
+    .topbar-spacer { flex: 1; }
+
+    .sort-select {
+      height: 34px;
+      padding: 0 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .avatar-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-btn svg { width: 16px; height: 16px; stroke: var(--text-3); fill: none; stroke-width: 1.5; }
+
+    /* ── User menu ── */
+    .user-menu {
+      position: absolute;
+      top: 52px;
+      right: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 8px 0;
+      min-width: 200px;
+      z-index: 200;
+      display: none;
+    }
+    .user-menu.open { display: block; }
+    .user-menu-header {
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .user-menu-name { font-weight: 500; font-size: 14px; }
+    .user-menu-handle { font-size: 12px; color: var(--text-3); }
+    .user-menu-item {
+      display: block;
+      width: 100%;
+      padding: 9px 16px;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .user-menu-item:hover { background: var(--surface2); }
+    .user-menu-item.danger { color: var(--danger); }
+
+    /* ── Content ── */
+    .content { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* ── Tag filters ── */
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .filter-label { font-size: 12px; color: var(--text-3); margin-right: 2px; }
+    .tag-pill {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag-pill:hover { border-color: var(--border-strong); }
+    .tag-pill.active { background: var(--accent-light); color: var(--accent-text); border-color: var(--accent); }
+    .tag-pill.clear { color: var(--danger); border-color: transparent; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-3);
+      min-height: 18px;
+      margin-bottom: .75rem;
+    }
+    .spinner {
+      width: 12px; height: 12px;
+      border: 1.5px solid var(--border-strong);
+      border-top-color: var(--text-2);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-ok { color: var(--accent); }
+    .status-err { color: var(--danger); }
+
+    /* ── New note trigger ── */
+    .new-note-trigger {
+      width: 100%;
+      padding: 14px 18px;
+      margin-bottom: 1.25rem;
+      background: var(--surface);
+      border: 1.5px dashed var(--border-strong);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .new-note-trigger:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .new-note-trigger svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+    /* ── Composer ── */
+    .composer {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 0 4px var(--accent-light);
+    }
+    .composer-title {
+      width: 100%;
+      font-family: 'Lora', serif;
+      font-size: 18px;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .composer-title::placeholder { color: var(--text-3); font-style: italic; }
+    .composer-body {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      resize: none;
+      line-height: 1.7;
+      min-height: 90px;
+    }
+    .composer-body::placeholder { color: var(--text-3); }
+    .composer-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .tag-input-small {
+      flex: 1;
+      min-width: 130px;
+      height: 30px;
+      padding: 0 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+    }
+    .tag-input-small:focus { border-color: var(--accent); }
+    .tag-input-small::placeholder { color: var(--text-3); }
+    .pin-toggle {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pin-toggle input { accent-color: var(--pin); cursor: pointer; }
+    .btn-row { display: flex; gap: 8px; margin-left: auto; }
+
+    /* ── Buttons ── */
+    .btn {
+      height: 32px;
+      padding: 0 16px;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--surface2); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:hover:not(:disabled) { background: var(--accent-text); }
+    .btn.danger-btn { color: var(--danger); border-color: transparent; }
+    .btn.danger-btn:hover { background: var(--danger-light); }
+
+    /* ── Notes grid ── */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Note card ── */
+    .note-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .note-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
+    .note-card.pinned { border-top: 2.5px solid var(--pin); }
+    .note-card.editing {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-light);
+      cursor: default;
+    }
+
+    .pin-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--pin);
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    .card-title {
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-title-edit {
+      width: 100%;
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+    .card-body-view {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 3.1em;
+    }
+    .card-body-edit {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-2);
+      resize: none;
+      line-height: 1.55;
+      min-height: 72px;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .card-date { font-size: 11px; color: var(--text-3); }
+    .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tag {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      background: var(--accent-light);
+      color: var(--accent-text);
+    }
+    .card-edit-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text-3);
+    }
+    .empty-state p { margin-top: 6px; font-size: 13px; }
+
+    /* ── Highlight ── */
+    .hl { background: #fde68a; color: #78350f; border-radius: 2px; padding: 0 1px; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: none; }
+
+    /* ── Repo picker modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+      padding: 2rem;
+      width: 100%; max-width: 400px;
+    }
+    .modal-card h2 {
+      font-family: 'Lora', serif;
+      font-size: 20px; font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .modal-card > p { font-size: 13px; color: var(--text-2); margin-bottom: 1.5rem; }
+    .modal-label { font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 5px; display: block; }
+    .modal-select, .modal-input {
+      width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      margin-bottom: 1rem;
+    }
+    .modal-select:focus, .modal-input:focus { border-color: var(--accent); }
+    .modal-divider { text-align: center; font-size: 12px; color: var(--text-3); margin: 0 0 1rem; }
+    .modal-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+
+    /* ── Topbar repo label ── */
+    .topbar-repo {
+      font-size: 12px; color: var(--text-3);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 130px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .topbar { padding: 0 1rem; gap: 8px; }
+      .search-wrap { max-width: none; }
+      .content { padding: 1rem; }
+      .sort-select { display: none; }
+      .topbar-repo { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══ AUTH SCREEN ══ -->
+  <div id="auth-screen">
+    <div class="auth-card" id="auth-card">
+      <div class="auth-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h1>Your notes, on GitHub</h1>
+      <p>Every note saves as a Markdown file in your own GitHub repo — with full version history and zero lock-in.</p>
+      <a id="github-login-btn" class="btn-github" href="#">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Sign in with GitHub
+      </a>
+      <div class="auth-error" id="auth-error"></div>
+      <p class="auth-note">Your token is stored only in your browser. We never store your data.</p>
+    </div>
+
+    <!-- No-config fallback card (shown if env vars missing) -->
+    <div class="auth-card" id="setup-card" style="display:none">
+      <div class="auth-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </div>
+      <h1>Finish setup</h1>
+      <p>Almost there — add your GitHub OAuth App credentials to Netlify and you're live.</p>
+      <div class="setup-steps">
+        <b>1.</b> Go to <b>github.com/settings/developers</b><br>
+        <b>2.</b> Click <b>New OAuth App</b><br>
+        <b>3.</b> Set Homepage URL to your Netlify URL<br>
+        <b>4.</b> Set Callback URL to <code>https://YOUR-SITE.netlify.app/oauth/callback</code><br>
+        <b>5.</b> In Netlify → Site settings → Environment variables, add:<br>
+        &nbsp;&nbsp;<code>GITHUB_CLIENT_ID</code> and <code>GITHUB_CLIENT_SECRET</code><br>
+        <b>6.</b> Redeploy — done!
+      </div>
+      <p style="font-size:13px;color:var(--text-3)">The <code>DEPLOY.md</code> in your downloaded zip has full instructions.</p>
+    </div>
+  </div>
+
+  <!-- ══ MAIN APP ══ -->
+  <div id="main-screen">
+
+    <nav class="topbar">
+      <span class="topbar-brand">Notes</span>
+      <span class="topbar-repo" id="topbar-repo"></span>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search…">
+      </div>
+      <div class="topbar-spacer"></div>
+      <select class="sort-select" id="sort-select">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+        <option value="pinned">Pinned first</option>
+      </select>
+      <button class="avatar-btn" id="avatar-btn" title="Account">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </button>
+      <div class="user-menu" id="user-menu">
+        <div class="user-menu-header">
+          <div class="user-menu-name" id="menu-name">—</div>
+          <div class="user-menu-handle" id="menu-handle">—</div>
+        </div>
+        <button class="user-menu-item" onclick="switchRepo()">Switch repo</button>
+        <button class="user-menu-item danger" onclick="signOut()">Sign out</button>
+      </div>
+    </nav>
+
+    <div class="content">
+      <div class="filter-row" id="filter-row"></div>
+      <div class="status-bar" id="status-bar"></div>
+      <button class="new-note-trigger" id="new-note-trigger">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Write a new note…
+      </button>
+      <!-- Composer injected here by JS -->
+      <div id="composer-slot"></div>
+      <div class="notes-grid" id="notes-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- ══ REPO PICKER MODAL ══ -->
+<div class="modal-overlay hidden" id="repo-modal">
+  <div class="modal-card">
+    <h2>Choose a repo</h2>
+    <p>Your notes are saved as Markdown files in a GitHub repo. Pick an existing one or type a name to create a new private repo.</p>
+    <label class="modal-label" for="repo-select">Your repos</label>
+    <select class="modal-select" id="repo-select"></select>
+    <div class="modal-divider">— or type a name —</div>
+    <label class="modal-label" for="repo-name-input">Repo name</label>
+    <input class="modal-input" id="repo-name-input" type="text" placeholder="notes" spellcheck="false" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn primary" id="repo-confirm-btn">Use this repo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config (injected at build or read from meta) ──
+const CLIENT_ID = document.querySelector('meta[name="gh-client-id"]')?.content || '';
+
+// ── State ──
+let S = {
+  token: null,
+  user: null,
+  repo: null,   // auto-created: username/notes
+  notes: [],
+  search: '',
+  sort: 'newest',
+  activeTag: null,
+  composerOpen: false,
+  editingId: null,
+  newNote: { title: '', body: '', tags: '', pinned: false },
+};
+
+// ── Persist token + repo choice ──
+function loadToken() { try { return localStorage.getItem('ghn_token'); } catch { return null; } }
+function saveToken(t) { localStorage.setItem('ghn_token', t); }
+function clearToken() { localStorage.removeItem('ghn_token'); }
+function loadSavedRepoName() { try { return localStorage.getItem('ghn_repo'); } catch { return null; } }
+function saveRepoName(n) { localStorage.setItem('ghn_repo', n); }
+function clearRepoName() { localStorage.removeItem('ghn_repo'); }
+
+// ── GitHub API helpers ──
+const GH = 'https://api.github.com';
+function apiH() {
+  return { 'Authorization': 'token ' + S.token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+}
+async function ghFetch(path, opts = {}) {
+  const r = await fetch(GH + path, { ...opts, headers: { ...apiH(), ...(opts.headers || {}) } });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || 'HTTP ' + r.status); }
+  return r.status === 204 ? null : r.json();
+}
+
+// ── OAuth flow ──
+function startOAuth() {
+  if (!CLIENT_ID) { showSetupCard(); return; }
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('oauth_state', state);
+  const params = new URLSearchParams({ client_id: CLIENT_ID, scope: 'repo', state });
+  const popup = window.open('https://github.com/login/oauth/authorize?' + params, 'github_oauth', 'width=600,height=700,left=200,top=100');
+  window.addEventListener('message', async (e) => {
+    if (e.origin !== location.origin) return;
+    if (e.data?.type !== 'oauth_token') return;
+    await onToken(e.data.token);
+  }, { once: true });
+  // Fallback if popup blocked
+  const poll = setInterval(() => { if (popup?.closed) clearInterval(poll); }, 500);
+}
+
+async function onToken(token) {
+  S.token = token;
+  saveToken(token);
+  await loadUser();
+  showApp();
+  await pickAndSetRepo();
+  await ensureRepo();
+  await loadNotes();
+}
+
+async function loadUser() {
+  const u = await ghFetch('/user');
+  S.user = u;
+  const img = document.getElementById('avatar-btn');
+  if (u.avatar_url) img.innerHTML = `<img src="${u.avatar_url}" alt="${u.login}">`;
+  document.getElementById('menu-name').textContent = u.name || u.login;
+  document.getElementById('menu-handle').textContent = '@' + u.login;
+}
+
+function setRepo(name) {
+  S.repo = S.user.login + '/' + name;
+  const el = document.getElementById('topbar-repo');
+  if (el) el.textContent = name;
+}
+
+async function showRepoPicker() {
+  const modal = document.getElementById('repo-modal');
+  const sel = document.getElementById('repo-select');
+  const inp = document.getElementById('repo-name-input');
+  modal.classList.remove('hidden');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  inp.value = '';
+
+  try {
+    const login = S.user.login;
+    const data = await ghFetch('/search/repositories?q=user:' + login + '+in:name+notes&sort=updated&per_page=100');
+    const repos = data.items || [];
+    sel.innerHTML = repos.length ? '<option value="">— select a repo —</option>' : '<option value="">No matching repos found</option>';
+    repos.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name + (r.private ? ' (private)' : '');
+      sel.appendChild(opt);
+    });
+    const current = S.repo ? S.repo.split('/')[1] : '';
+    if (current && repos.find(r => r.name === current)) sel.value = current;
+    else if (repos.find(r => r.name === 'notes')) sel.value = 'notes';
+    inp.value = sel.value || 'notes';
+  } catch {
+    sel.innerHTML = '<option value="">Could not load repos</option>';
+    inp.value = loadSavedRepoName() || 'notes';
+  }
+
+  sel.onchange = () => { if (sel.value) inp.value = sel.value; };
+  inp.oninput = () => {
+    const match = [...sel.options].find(o => o.value === inp.value);
+    sel.value = match ? match.value : '';
+  };
+
+  return new Promise(resolve => {
+    document.getElementById('repo-confirm-btn').onclick = () => {
+      const raw = (inp.value || sel.value || 'notes').trim();
+      const name = raw.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/^[-.]|[-.]$/g, '') || 'notes';
+      modal.classList.add('hidden');
+      resolve(name);
+    };
+  });
+}
+
+async function pickAndSetRepo() {
+  const saved = loadSavedRepoName();
+  if (saved) { setRepo(saved); return; }
+  const name = await showRepoPicker();
+  saveRepoName(name);
+  setRepo(name);
+}
+
+async function switchRepo() {
+  closeUserMenu();
+  const name = await showRepoPicker();
+  saveRepoName(name);
+  setRepo(name);
+  S.notes = [];
+  render();
+  await ensureRepo();
+  await loadNotes();
+}
+
+async function ensureRepo() {
+  const repoName = S.repo.split('/')[1];
+  try {
+    await ghFetch('/repos/' + S.repo);
+  } catch (e) {
+    if (e.message.includes('404') || e.message.includes('Not Found')) {
+      setStatus('Creating your notes repository…');
+      await ghFetch('/user/repos', {
+        method: 'POST',
+        body: JSON.stringify({ name: repoName, private: true, description: 'My notes', auto_init: true }),
+      });
+      setStatus('');
+    }
+  }
+}
+
+function signOut() {
+  clearToken();
+  clearRepoName();
+  S.token = null;
+  S.user = null;
+  S.repo = null;
+  S.notes = [];
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  closeUserMenu();
+}
+
+// ── Note serialization ──
+function slugify(t) { return (t || 'note').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/, '').slice(0, 55) || 'note'; }
+
+function noteToMd(n) {
+  return `---\ntitle: ${n.title || 'Untitled'}\ndate: ${n.date}\ntags: [${(n.tags || []).join(', ')}]\npinned: ${!!n.pinned}\nid: ${n.id}\n---\n\n${n.body || ''}`;
+}
+
+function parseMd(filename, b64, sha) {
+  const text = decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+  const fm = text.match(/^---\n([\s\S]*?)\n---/);
+  const body = text.replace(/^---[\s\S]*?---\n\n?/, '').trimEnd();
+  const get = k => { const m = (fm?.[1] || '').match(new RegExp(k + ':\\s*(.+)')); return m ? m[1].trim() : ''; };
+  const tr = get('tags').replace(/[\[\]]/g, '');
+  return { id: get('id') || filename, title: get('title') || filename.replace('.md', ''), date: get('date') || today(), tags: tr ? tr.split(',').map(x => x.trim()).filter(Boolean) : [], pinned: get('pinned') === 'true', body, filename, sha };
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+function fmt(d) { try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d || ''; } }
+
+// ── Load / Save / Delete ──
+async function loadNotes() {
+  setStatus('Loading notes…');
+  try {
+    let files;
+    try { files = await ghFetch('/repos/' + S.repo + '/contents/notes'); }
+    catch (e) { if (e.message.includes('404')) { files = []; } else throw e; }
+    const mds = (Array.isArray(files) ? files : []).filter(f => f.name.endsWith('.md'));
+    const loaded = await Promise.all(mds.map(async f => {
+      const d = await ghFetch('/repos/' + S.repo + '/contents/notes/' + f.name);
+      return parseMd(f.name, d.content, d.sha);
+    }));
+    S.notes = loaded;
+    setStatus('');
+    render();
+  } catch (e) { setStatus('Could not load notes: ' + e.message, 'err'); }
+}
+
+async function saveNote(note) {
+  setStatus('Saving…');
+  try {
+    const res = await ghFetch('/repos/' + S.repo + '/contents/notes/' + note.filename, {
+      method: 'PUT',
+      body: JSON.stringify({ message: (note.sha ? 'Update' : 'Add') + ' note', content: btoa(unescape(encodeURIComponent(noteToMd(note)))), ...(note.sha ? { sha: note.sha } : {}) }),
+    });
+    note.sha = res.content.sha;
+    const i = S.notes.findIndex(n => n.id === note.id);
+    if (i >= 0) S.notes[i] = note; else S.notes.unshift(note);
+    setStatus('Saved', 'ok');
+    setTimeout(() => setStatus(''), 2200);
+    return true;
+  } catch (e) { setStatus('Save failed: ' + e.message, 'err'); return false; }
+}
+
+async function deleteNote(id) {
+  const n = S.notes.find(x => x.id === id); if (!n) return;
+  if (!confirm('Delete "' + (n.title || 'this note') + '"? This cannot be undone.')) return;
+  setStatus('Deleting…');
+  try {
+    await ghFetch('/repos/' + S.repo + '/contents/notes/' + n.filename, { method: 'DELETE', body: JSON.stringify({ message: 'Delete note', sha: n.sha }) });
+    S.notes = S.notes.filter(x => x.id !== id);
+    S.editingId = null;
+    setStatus('Deleted', 'ok');
+    setTimeout(() => setStatus(''), 2200);
+    render();
+  } catch (e) { setStatus('Delete failed: ' + e.message, 'err'); }
+}
+
+// ── UI helpers ──
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status-bar'); if (!el) return;
+  if (!msg) { el.innerHTML = ''; return; }
+  const cls = type === 'ok' ? 'status-ok' : type === 'err' ? 'status-err' : '';
+  el.innerHTML = (!type ? '<div class="spinner"></div>' : '') + `<span class="${cls}">${msg}</span>`;
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function hl(text, q) {
+  if (!q || !text) return text || '';
+  return text.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<span class="hl">$1</span>');
+}
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
+// ── User menu toggle ──
+function closeUserMenu() { document.getElementById('user-menu').classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (!document.getElementById('avatar-btn')?.contains(e.target)) closeUserMenu();
+});
+
+// ── Filter/sort helpers ──
+function allTags() { return [...new Set(S.notes.flatMap(n => n.tags || []))].sort(); }
+function filtered() {
+  const q = (S.search || '').toLowerCase();
+  let ns = S.notes.filter(n => {
+    const hit = !q || (n.title + ' ' + n.body + ' ' + (n.tags || []).join(' ')).toLowerCase().includes(q);
+    const tag = !S.activeTag || (n.tags || []).includes(S.activeTag);
+    return hit && tag;
+  });
+  if (S.sort === 'newest') ns.sort((a, b) => b.date.localeCompare(a.date));
+  else if (S.sort === 'oldest') ns.sort((a, b) => a.date.localeCompare(b.date));
+  else if (S.sort === 'az') ns.sort((a, b) => a.title.localeCompare(b.title));
+  else if (S.sort === 'za') ns.sort((a, b) => b.title.localeCompare(a.title));
+  else if (S.sort === 'pinned') ns.sort((a, b) => (b.pinned - a.pinned) || b.date.localeCompare(a.date));
+  return ns;
+}
+
+// ── Render ──
+function render() {
+  const q = S.search;
+  const shown = filtered();
+  const tags = allTags();
+
+  // Filter row
+  const fr = document.getElementById('filter-row');
+  if (fr) {
+    fr.innerHTML = tags.length ? '<span class="filter-label">Filter:</span>' : '';
+    tags.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'tag-pill' + (S.activeTag === t ? ' active' : '');
+      b.textContent = t;
+      b.onclick = () => { S.activeTag = S.activeTag === t ? null : t; render(); };
+      fr.appendChild(b);
+    });
+    if (S.activeTag) {
+      const c = document.createElement('button');
+      c.className = 'tag-pill clear'; c.textContent = 'Clear filter ×';
+      c.onclick = () => { S.activeTag = null; render(); };
+      fr.appendChild(c);
+    }
+  }
+
+  // Composer
+  const slot = document.getElementById('composer-slot');
+  const trigger = document.getElementById('new-note-trigger');
+  if (slot && trigger) {
+    if (S.composerOpen) {
+      trigger.style.display = 'none';
+      const nn = S.newNote;
+      slot.innerHTML = `<div class="composer" id="composer">
+        <input class="composer-title" id="c-title" type="text" placeholder="Note title…" value="${(nn.title || '').replace(/"/g, '&quot;')}">
+        <textarea class="composer-body" id="c-body" placeholder="Write your note here…">${nn.body || ''}</textarea>
+        <div class="composer-footer">
+          <input class="tag-input-small" id="c-tags" type="text" placeholder="Tags: work, ideas…" value="${(nn.tags || '').replace(/"/g, '&quot;')}">
+          <label class="pin-toggle"><input type="checkbox" id="c-pin"${nn.pinned ? ' checked' : ''}> Pin this note</label>
+          <div class="btn-row">
+            <button class="btn" id="c-cancel">Cancel</button>
+            <button class="btn primary" id="c-save">Save note</button>
+          </div>
+        </div>
+      </div>`;
+      const titleEl = document.getElementById('c-title');
+      const bodyEl = document.getElementById('c-body');
+      if (titleEl) titleEl.focus();
+      if (bodyEl) { autoResize(bodyEl); bodyEl.addEventListener('input', () => { S.newNote.body = bodyEl.value; autoResize(bodyEl); }); }
+      document.getElementById('c-title')?.addEventListener('input', e => S.newNote.title = e.target.value);
+      document.getElementById('c-tags')?.addEventListener('input', e => S.newNote.tags = e.target.value);
+      document.getElementById('c-pin')?.addEventListener('change', e => S.newNote.pinned = e.target.checked);
+      document.getElementById('c-cancel')?.addEventListener('click', () => { S.composerOpen = false; S.newNote = { title: '', body: '', tags: '', pinned: false }; render(); });
+      document.getElementById('c-save')?.addEventListener('click', createNote);
+    } else {
+      trigger.style.display = '';
+      slot.innerHTML = '';
+    }
+  }
+
+  // Notes grid
+  const grid = document.getElementById('notes-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  if (!shown.length) {
+    const e = document.createElement('div'); e.className = 'empty-state';
+    e.innerHTML = `<strong>${S.notes.length ? 'No notes match.' : 'No notes yet.'}</strong><p>${S.notes.length ? 'Try a different search or filter.' : 'Hit "Write a new note" above to get started.'}</p>`;
+    grid.appendChild(e); return;
+  }
+
+  shown.forEach(n => {
+    const isEditing = S.editingId === n.id;
+    const card = document.createElement('div');
+    card.className = 'note-card' + (n.pinned ? ' pinned' : '') + (isEditing ? ' editing' : '');
+
+    if (isEditing) {
+      card.innerHTML = `
+        <input class="card-title-edit" type="text" value="${(n.title || '').replace(/"/g, '&quot;')}" placeholder="Title…" data-field="title">
+        <textarea class="card-body-edit" data-field="body">${n.body || ''}</textarea>
+        <div class="card-edit-footer">
+          <input class="tag-input-small" type="text" placeholder="Tags…" value="${(n.tags || []).join(', ').replace(/"/g, '&quot;')}" data-field="tagsRaw" style="flex:1;min-width:100px">
+          <label class="pin-toggle"><input type="checkbox" data-field="pinned"${n.pinned ? ' checked' : ''}> Pin</label>
+          <div class="btn-row">
+            <button class="btn danger-btn" data-action="delete">Delete</button>
+            <button class="btn" data-action="cancel">Cancel</button>
+            <button class="btn primary" data-action="save">Save</button>
+          </div>
+        </div>`;
+      const ta = card.querySelector('.card-body-edit');
+      if (ta) { autoResize(ta); ta.addEventListener('input', () => autoResize(ta)); }
+      card.addEventListener('click', e => {
+        const action = e.target.closest('[data-action]')?.dataset.action;
+        if (action === 'delete') { deleteNote(n.id); return; }
+        if (action === 'cancel') { S.editingId = null; render(); return; }
+        if (action === 'save') { commitEdit(n.id, card); return; }
+      });
+    } else {
+      card.innerHTML = `
+        <div class="card-title">${n.pinned ? '<span class="pin-dot"></span>' : ''}${hl(n.title, q) || 'Untitled'}</div>
+        <div class="card-body-view">${hl(n.body, q) || '<span style="color:var(--text-3);font-style:italic">No content</span>'}</div>
+        <div class="card-footer">
+          <span class="card-date">${fmt(n.date)}</span>
+          <span class="card-tags">${(n.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</span>
+        </div>`;
+      card.onclick = () => { S.editingId = n.id; S.composerOpen = false; render(); };
+    }
+    grid.appendChild(card);
+  });
+}
+
+async function createNote() {
+  const nn = S.newNote;
+  const title = (nn.title || '').trim() || 'Untitled';
+  const id = 'note-' + Date.now();
+  const filename = slugify(title) + '-' + Date.now() + '.md';
+  const tags = (nn.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+  const note = { id, title, body: (nn.body || '').trim(), tags, pinned: !!nn.pinned, date: today(), filename, sha: null };
+  S.composerOpen = false;
+  S.newNote = { title: '', body: '', tags: '', pinned: false };
+  render();
+  await saveNote(note);
+  render();
+}
+
+async function commitEdit(id, card) {
+  const n = S.notes.find(x => x.id === id); if (!n) return;
+  const updated = { ...n };
+  card.querySelectorAll('[data-field]').forEach(el => {
+    const f = el.dataset.field;
+    if (f === 'tagsRaw') updated.tags = el.value.split(',').map(t => t.trim()).filter(Boolean);
+    else if (f === 'pinned') updated.pinned = el.checked;
+    else updated[f] = el.value;
+  });
+  S.editingId = null;
+  render();
+  await saveNote(updated);
+  render();
+}
+
+// ── Auth screen init ──
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-screen').style.display = 'block';
+}
+
+function showSetupCard() {
+  document.getElementById('auth-card').style.display = 'none';
+  document.getElementById('setup-card').style.display = 'block';
+}
+
+// ── Wire up events after DOM ready ──
+document.addEventListener('DOMContentLoaded', () => {
+  // OAuth login button
+  document.getElementById('github-login-btn').addEventListener('click', e => { e.preventDefault(); startOAuth(); });
+
+  // Avatar / menu toggle
+  document.getElementById('avatar-btn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    document.getElementById('user-menu').classList.toggle('open');
+  });
+
+  // New note trigger
+  document.getElementById('new-note-trigger')?.addEventListener('click', () => {
+    S.composerOpen = true;
+    S.editingId = null;
+    S.newNote = { title: '', body: '', tags: '', pinned: false };
+    render();
+  });
+
+  // Search
+  document.getElementById('search-input')?.addEventListener('input', e => { S.search = e.target.value; render(); });
+
+  // Sort
+  document.getElementById('sort-select')?.addEventListener('change', e => { S.sort = e.target.value; render(); });
+
+  // Check for existing token
+  const token = loadToken();
+  if (token) {
+    S.token = token;
+    showApp();
+    loadUser().then(() => pickAndSetRepo()).then(() => ensureRepo()).then(() => loadNotes()).catch(() => { clearToken(); signOut(); });
+  } else if (!CLIENT_ID) {
+    // Show setup guide instead of broken OAuth button
+    showSetupCard();
+  }
+
+  // Handle OAuth popup fallback (sessionStorage token)
+  const fallbackToken = sessionStorage.getItem('gh_oauth_token');
+  if (fallbackToken) {
+    sessionStorage.removeItem('gh_oauth_token');
+    onToken(fallbackToken);
+  }
+});
+</script>
+
+</body>
+</html>
