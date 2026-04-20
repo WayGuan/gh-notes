@@ -11,6 +11,8 @@ exports.handler = async (event) => {
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
 
+  console.log('CLIENT_ID set:', !!clientId, '| CLIENT_SECRET set:', !!clientSecret);
+  
   if (!clientId || !clientSecret) {
     return {
       statusCode: 500,
