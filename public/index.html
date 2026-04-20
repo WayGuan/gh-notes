@@ -523,9 +523,7 @@
       font-size: 12px;
       color: var(--accent);
       cursor: pointer;
-      display: none;
     }
-    .card-body-view + .read-more-btn { display: inline-block; }
     .card-body-edit {
       width: 100%;
       font-family: 'DM Sans', sans-serif;
@@ -1154,7 +1152,6 @@ function render() {
         </div>`;
       const bodyEl = card.querySelector('.card-body-view');
       const btn = card.querySelector('.read-more-btn');
-      if (bodyEl.scrollHeight <= bodyEl.clientHeight) btn.style.display = 'none';
       btn.addEventListener('click', e => {
         e.stopPropagation();
         const expanded = bodyEl.classList.toggle('expanded');
