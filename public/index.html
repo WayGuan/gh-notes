@@ -1140,7 +1140,8 @@ async function createNote() {
   const nn = S.newNote;
   const title = (nn.title || '').trim() || 'Untitled';
   const id = 'note-' + Date.now();
-  const filename = slugify(title) + '-' + Date.now() + '.md';
+  const datetime = new Date().toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_');
+  const filename = slugify(title) + '_' + datetime + '.md';
   const tags = (nn.tags || '').split(',').map(t => t.trim()).filter(Boolean);
   const note = { id, title, body: (nn.body || '').trim(), tags, pinned: !!nn.pinned, date: today(), filename, sha: null };
   S.composerOpen = false;
